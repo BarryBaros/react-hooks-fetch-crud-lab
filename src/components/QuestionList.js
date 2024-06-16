@@ -6,17 +6,24 @@ function QuestionList() {
 
   useEffect(() => {
     fetch("http://localhost:4000/questions")
-      .then(response => response.json())
-      .then(data => setQuestions(data));
+      .then((response) => response.json())
+      .then((data) => setQuestions(data));
   }, []);
 
   return (
-    <div>
+    <section>
       <h1>Questions</h1>
-      {questions.map(question => (
-        <QuestionItem key={question.id} question={question} />
-      ))}
-    </div>
+      <ul>
+        {questions.map((question) => (
+          <QuestionItem
+            key={question.id}
+            question={question}
+            setQuestions={setQuestions}
+            questions={questions}
+          />
+        ))}
+      </ul>
+    </section>
   );
 }
 
