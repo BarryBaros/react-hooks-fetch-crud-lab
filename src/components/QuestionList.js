@@ -1,28 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import QuestionItem from "./QuestionItem";
 
-function QuestionList() {
-  const [questions, setQuestions] = useState([]);
-
-  useEffect(() => {
-    fetch("http://localhost:4000/questions")
-      .then((response) => response.json())
-      .then((data) => setQuestions(data));
-  }, []);
+function QuestionList({ questions, onDeleteQuestion, onUpdateQuestion }) {
+  const questionItems = questions.map((question) => (
+    <QuestionItem
+      key={question.id}
+      question={question}
+      onDelete={onDeleteQuestion}
+      onUpdate={onUpdateQuestion}
+    />
+  ));
 
   return (
     <section>
       <h1>Questions</h1>
-      <ul>
-        {questions.map((question) => (
-          <QuestionItem
-            key={question.id}
-            question={question}
-            setQuestions={setQuestions}
-            questions={questions}
-          />
-        ))}
-      </ul>
+      <ul>{questionItems}</ul>
     </section>
   );
 }

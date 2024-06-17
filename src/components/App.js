@@ -8,9 +8,19 @@ function App() {
   const [questions, setQuestions] = useState([]);
 
   useEffect(() => {
+    let isMounted = true;
+
     fetch("http://localhost:4000/questions")
       .then((response) => response.json())
-      .then((data) => setQuestions(data));
+      .then((data) => {
+        if (isMounted) {
+          setQuestions(data);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   function handleAddQuestion(newQuestion) {

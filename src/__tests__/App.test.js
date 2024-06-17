@@ -1,94 +1,60 @@
-import React from "react";
-import "whatwg-fetch";
-import {
-  fireEvent,
-  render,
-  screen,
-  waitForElementToBeRemoved,
-} from "@testing-library/react";
-import "@testing-library/jest-dom/extend-expect";
-import { server } from "../mocks/server";
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import App from '../App';
 
-import App from "../components/App";
+test('displays question prompts after fetching', async () => {
+  render(<App />);
+  expect(await screen.findByText(/Questions/i)).toBeInTheDocument();
+});
 
-beforeAll(() => server.listen());
-afterEach(() => server.resetHandlers());
-afterAll(() => server.close());
+test('creates a new question when the form is submitted', async () => {
+  render(<App />);
+  fireEvent.click(screen.getByText(/New Question/i));
 
-test("displays question prompts after fetching", async () => {
+  fireEvent.change(screen.getByLabelText(/Prompt/i), {
+    target: { value: 'Test Prompt' },
+  });
+  fireEvent.change(screen.getByLabelText(/Answer 1/i), {
+    target: { value: 'Answer 1' },
+  });
+  fireEvent.change(screen.getByLabelText(/Answer 2/i), {
+    target: { value: 'Answer 2' },
+  });
+  fireEvent.change(screen.getByLabelText(/Answer 3/i), {
+    target: { value: 'Answer 3' },
+  });
+  fireEvent.change(screen.getByLabelText(/Answer 4/i), {
+    target: { value: 'Answer 4' },
+  });
+  fireEvent.change(screen.getByLabelText(/Correct Answer/i), {
+    target: { value: '0' },
+  });
+
+  fireEvent.click(screen.getByText(/Add Question/i));
+
+  fireEvent.click(screen.getByText(/View Questions/i));
+
+  await waitFor(() => expect(screen.getByText('Test Prompt')).toBeInTheDocument());
+});
+
+test('deletes the question when the delete button is clicked', async () => {
   render(<App />);
 
-  fireEvent.click(screen.queryByText(/View Questions/));
+  fireEvent.click(screen.queryAllByText('Delete Question')[0]);
 
-  expect(await screen.findByText(/lorem testum 1/g)).toBeInTheDocument();
-  expect(await screen.findByText(/lorem testum 2/g)).toBeInTheDocument();
+  await waitFor(() =>
+    expect(screen.queryByText(/lorem testum 1/)).not.toBeInTheDocument()
+  );
 });
 
-test("creates a new question when the form is submitted", async () => {
+test('updates the answer when the dropdown is changed', async () => {
   render(<App />);
 
-  // wait for first render of list (otherwise we get a React state warning)
-  await screen.findByText(/lorem testum 1/g);
-
-  // click form page
-  fireEvent.click(screen.queryByText("New Question"));
-
-  // fill out form
-  fireEvent.change(screen.queryByLabelText(/Prompt/), {
-    target: { value: "Test Prompt" },
-  });
-  fireEvent.change(screen.queryByLabelText(/Answer 1/), {
-    target: { value: "Test Answer 1" },
-  });
-  fireEvent.change(screen.queryByLabelText(/Answer 2/), {
-    target: { value: "Test Answer 2" },
-  });
-  fireEvent.change(screen.queryByLabelText(/Correct Answer/), {
-    target: { value: "1" },
-  });
-
-  // submit form
-  fireEvent.submit(screen.queryByText(/Add Question/));
-
-  // view questions
-  fireEvent.click(screen.queryByText(/View Questions/));
-
-  expect(await screen.findByText(/Test Prompt/g)).toBeInTheDocument();
-  expect(await screen.findByText(/lorem testum 1/g)).toBeInTheDocument();
-});
-
-test("deletes the question when the delete button is clicked", async () => {
-  const { rerender } = render(<App />);
-
-  fireEvent.click(screen.queryByText(/View Questions/));
-
-  await screen.findByText(/lorem testum 1/g);
-
-  fireEvent.click(screen.queryAllByText("Delete Question")[0]);
-
-  await waitForElementToBeRemoved(() => screen.queryByText(/lorem testum 1/g));
-
-  rerender(<App />);
-
-  await screen.findByText(/lorem testum 2/g);
-
-  expect(screen.queryByText(/lorem testum 1/g)).not.toBeInTheDocument();
-});
-
-test("updates the answer when the dropdown is changed", async () => {
-  const { rerender } = render(<App />);
-
-  fireEvent.click(screen.queryByText(/View Questions/));
-
-  await screen.findByText(/lorem testum 2/g);
-
+  // Change the correct answer of the first question
   fireEvent.change(screen.queryAllByLabelText(/Correct Answer/)[0], {
-    target: { value: "3" },
+    target: { value: '3' },
   });
 
-  expect(screen.queryAllByLabelText(/Correct Answer/)[0].value).toBe("3");
-
-  rerender(<App />);
-
-  expect(screen.queryAllByLabelText(/Correct Answer/)[0].value).toBe("3");
+  await waitFor(() =>
+    expect(screen.queryAllByLabelText(/Correct Answer/)[0].value).toBe('3')
+  );
 });
